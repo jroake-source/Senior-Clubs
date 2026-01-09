@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Senior School Clubs - Final Version</title>
+    <style>
+        :root { 
+            --school-teal: #008080; 
+            --bg-dark: #050505;
+            --card-bg: #ffffff;
+        }
+        
+        body, html { 
+            height: 100%; margin: 0; padding: 0; 
+            background: var(--bg-dark);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            overflow: hidden;
+            display: flex; justify-content: center;
+        }
+        
+        .ticker-wrap {
+            width: 100vw; height: 100vh;
+            background: var(--card-bg); position: relative;
+            display: flex; flex-direction: column;
+        }
+
+        .header-container {
+            background: var(--school-teal); 
+            color: white; padding: 25px 60px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 12px solid #005a5a;
+            z-index: 100;
+        }
+
+        .header-text h1 { margin: 0; font-size: 3.8rem; text-transform: uppercase; font-weight: 900; }
+
+        #live-clock {
+            font-size: 3.5rem; font-weight: 700;
+            background: rgba(0,0,0,0.25); padding: 10px 35px; border-radius: 12px;
+        }
+
+        .scroll-box { flex-grow: 1; overflow: hidden; position: relative; }
+
+        #content {
+            position: absolute; width: 100%;
+            animation: scroll-up 200s linear infinite;
+        }
+
+        .club-card { padding: 55px 80px; border-bottom: 2px solid #eee; background: white; }
+
+        .club-name { 
+            font-size: 4.8rem; font-weight: 900; 
+            color: var(--school-teal); line-height: 1.1; margin-bottom: 25px;
+            display: block;
+        }
+
+        .club-meta { font-size: 2.5rem; color: #222; font-weight: 600; display: flex; gap: 40px; }
+
+        .term-badge { background: var(--school-teal); color: white; padding: 8px 25px; border-radius: 12px; }
+
+        .years-label { color: #b71c1c; background: #fff5f5; padding: 0 15px; border-radius: 8px; }
+
+        @keyframes scroll-up {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+    <div class="header-container">
+        <div class="header-text"><h1>Senior School Clubs</h1></div>
+        <div id="live-clock">00:00</div>
+    </div>
+
+    <div class="scroll-box">
+        <div id="content">
+            </div>
+    </div>
+</div>
+
+<script>
+    /* STEP 1: Open your SOCS URL in a browser:
+       https://www.socscms.com/socs/xml/cocurricular.ashx?ID=25060&key=2BB4684F-0679-4050-A5E3-0E88A401862C&data=clubs
+       
+       STEP 2: Copy the XML and paste it between the backticks below:
+    */
+    const rawXml = `
+    <clubs>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1535795</clubid>
+<clubname>Reception - Music Club</clubname>
+<gender>mixed</gender>
+<yeargroups>0</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1535790</clubid>
+<clubname>Rec-Y1 - **EXTERNAL** Gateway Dance</clubname>
+<gender>mixed</gender>
+<yeargroups>0,1</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1535791</clubid>
+<clubname>Y1-Y2 - Choir</clubname>
+<gender>mixed</gender>
+<yeargroups>1,2</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1535792</clubid>
+<clubname>Y3-Y6 - Choir</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4,5,6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1535793</clubid>
+<clubname>Y5-6 - Cross Country/Fitness </clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535915</clubid>
+<clubname>Choir</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1569356</clubid>
+<clubname>Christian Union.</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1579186</clubid>
+<clubname>Classical Greek</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535914</clubid>
+<clubname>Cross Country</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535924</clubid>
+<clubname>Food Club</clubname>
+<gender>mixed</gender>
+<yeargroups>8</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535916</clubid>
+<clubname>Football</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535921</clubid>
+<clubname>Hockey Y7-8</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535925</clubid>
+<clubname>Musical</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535923</clubid>
+<clubname>Netball 1</clubname>
+<gender>mixed</gender>
+<yeargroups>10</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535919</clubid>
+<clubname>Netball 2</clubname>
+<gender>mixed</gender>
+<yeargroups>10</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535920</clubid>
+<clubname>Orchestra</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1597824</clubid>
+<clubname>Proten Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1535918</clubid>
+<clubname>Recreational Badminton Y9-11</clubname>
+<gender>mixed</gender>
+<yeargroups>9,10,11</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1628078</clubid>
+<clubname>Epic Sports **EXTERNAL**</clubname>
+<gender>mixed</gender>
+<yeargroups>0,1,2,3,4,5,6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1535797</clubid>
+<clubname>Y2 - Gymnastics</clubname>
+<gender>mixed</gender>
+<yeargroups>1,2</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1535800</clubid>
+<clubname>Y3-6 - Samba Band</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4,5,6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1535798</clubid>
+<clubname>Y4 - Gymnastics</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1535796</clubid>
+<clubname>Y4-6 - **EXTERNAL** Gateway Dance</clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1535799</clubid>
+<clubname>Y5-6 Gymnastics</clubname>
+<gender>mixed</gender>
+<yeargroups>6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1535928</clubid>
+<clubname>Badminton Club </clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1535931</clubid>
+<clubname>Badminton Club - Y8</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1624627</clubid>
+<clubname>eSports - KS3</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1535927</clubid>
+<clubname>Fitness</clubname>
+<gender>mixed</gender>
+<yeargroups>9,10</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1579202</clubid>
+<clubname>Guitar Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1535933</clubid>
+<clubname>Musical - (cast)</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1535932</clubid>
+<clubname>Netball - Y8</clubname>
+<gender>mixed</gender>
+<yeargroups>8</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1535926</clubid>
+<clubname>Netball 2 - Y9</clubname>
+<gender>mixed</gender>
+<yeargroups>9</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1535930</clubid>
+<clubname>Physics Party</clubname>
+<gender>mixed</gender>
+<yeargroups>10</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535808</clubid>
+<clubname>Y1 - Marvellous Maths</clubname>
+<gender>mixed</gender>
+<yeargroups>1</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535807</clubid>
+<clubname>Y1 - Y2 - Cross Country/Fitness</clubname>
+<gender>mixed</gender>
+<yeargroups>0</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535804</clubid>
+<clubname>Y1-2 - Cross Country</clubname>
+<gender>mixed</gender>
+<yeargroups>1,2</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535809</clubid>
+<clubname>Y2 - Marvellous Maths</clubname>
+<gender>mixed</gender>
+<yeargroups>2</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535811</clubid>
+<clubname>Y2- Outdoor Explorers</clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535812</clubid>
+<clubname>Y2-6 - Orchestra </clubname>
+<gender>mixed</gender>
+<yeargroups>2,3,4,5,6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535810</clubid>
+<clubname>Y3&4 - Book club</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535806</clubid>
+<clubname>Y3-4 - Recorder Club (max 12)</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535801</clubid>
+<clubname>Y3-4 - Netball</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1535803</clubid>
+<clubname>Y5&6 - Football</clubname>
+<gender>mixed</gender>
+<yeargroups>5</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1617074</clubid>
+<clubname>Y5&6 - Science Club</clubname>
+<gender>mixed</gender>
+<yeargroups>4</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1597823</clubid>
+<clubname>Debating Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1535939</clubid>
+<clubname>Film Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1535937</clubid>
+<clubname>Fitness Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1535961</clubid>
+<clubname>GCSE - Spanish/French/German Writing</clubname>
+<gender>mixed</gender>
+<yeargroups>10</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1535936</clubid>
+<clubname>Gymnastics (Y7-8)</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1535929</clubid>
+<clubname>History Society</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1622981</clubid>
+<clubname>Lego League - AM</clubname>
+<gender>mixed</gender>
+<yeargroups>all</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1622983</clubid>
+<clubname>Lego Leauge - PM</clubname>
+<gender>mixed</gender>
+<yeargroups>all</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1535956</clubid>
+<clubname>Netball 1 - Y9</clubname>
+<gender>mixed</gender>
+<yeargroups>9</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1535959</clubid>
+<clubname>Trampoline Y7-8</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1535834</clubid>
+<clubname>Reception - Kapla </clubname>
+<gender>mixed</gender>
+<yeargroups>0</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1535828</clubid>
+<clubname>Reception-Y2 - Ball Skills </clubname>
+<gender>mixed</gender>
+<yeargroups>0,1,2</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1535835</clubid>
+<clubname>Y1-Kapla</clubname>
+<gender>mixed</gender>
+<yeargroups>1,2</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1535840</clubid>
+<clubname>Y3&4 - Fitness</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1535833</clubid>
+<clubname>Y3-4 - Cross Country/Fitness</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1535830</clubid>
+<clubname>Y5 - Badminton</clubname>
+<gender>mixed</gender>
+<yeargroups>5</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1535829</clubid>
+<clubname>Y5 - Netball</clubname>
+<gender>mixed</gender>
+<yeargroups>5</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1535842</clubid>
+<clubname>Y5-6 -Glass Painting</clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4.Senior School Co-curricular- Thursday</category>
+<clubid>1535981</clubid>
+<clubname>Hockey Y9-10</clubname>
+<gender>mixed</gender>
+<yeargroups>9,10</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4.Senior School Co-curricular- Thursday</category>
+<clubid>1612836</clubid>
+<clubname>Netball - Senior</clubname>
+<gender>mixed</gender>
+<yeargroups>11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>4.Senior School Co-curricular- Thursday</category>
+<clubid>1535982</clubid>
+<clubname>Netball Y7</clubname>
+<gender>mixed</gender>
+<yeargroups>7</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5 Junior School Co-curricular - Friday</category>
+<clubid>1535843</clubid>
+<clubname>Reception -Y5 - **EXTERNAL** Rugby Minis</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4,5</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5 Junior School Co-curricular - Friday</category>
+<clubid>1535844</clubid>
+<clubname>Y3-4 - Football</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5 Junior School Co-curricular - Friday</category>
+<clubid>1535845</clubid>
+<clubname>Y6 - Badminton</clubname>
+<gender>mixed</gender>
+<yeargroups>6,7,8</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5 Junior School Co-curricular - Friday</category>
+<clubid>1535846</clubid>
+<clubname>Y6 - Netball</clubname>
+<gender>mixed</gender>
+<yeargroups>6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1588261</clubid>
+<clubname>Big Sisters</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1535983</clubid>
+<clubname>Current Affairs</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1612837</clubid>
+<clubname>Gymnastics</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1612838</clubid>
+<clubname>KS3 Dance</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1579239</clubid>
+<clubname>LEAD Enterprise enrichment</clubname>
+<gender>mixed</gender>
+<yeargroups>12</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1636138</clubid>
+<clubname>Lego League - (AM)</clubname>
+<gender>mixed</gender>
+<yeargroups>6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1636139</clubid>
+<clubname>Lego League (PM)</clubname>
+<gender>mixed</gender>
+<yeargroups>6</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1535985</clubid>
+<clubname>Musical (cast)</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1535986</clubid>
+<clubname>Recreational Basketball</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Autumn Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1579240</clubid>
+<clubname>Very beginner Japanese club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1690285</clubid>
+<clubname>Reception - Music Club</clubname>
+<gender>mixed</gender>
+<yeargroups>0</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1690295</clubid>
+<clubname>Rec-Y1 - **EXTERNAL** Gateway Dance</clubname>
+<gender>mixed</gender>
+<yeargroups>0,1</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1690296</clubid>
+<clubname>Y1-Y2 - Choir</clubname>
+<gender>mixed</gender>
+<yeargroups>1,2</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1690297</clubid>
+<clubname>Y3-Y6 - Choir</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4,5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1 Junior School Co-curricular - Monday</category>
+<clubid>1690298</clubid>
+<clubname>Y5-6 - Cross Country/Fitness </clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689726</clubid>
+<clubname>Choir</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689732</clubid>
+<clubname>Christian Union.</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689733</clubid>
+<clubname>Classical Greek</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689727</clubid>
+<clubname>Cross Country</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689738</clubid>
+<clubname>Food Club</clubname>
+<gender>mixed</gender>
+<yeargroups>8</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689750</clubid>
+<clubname>Football (All)</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689728</clubid>
+<clubname>Hockey Y7-8</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689739</clubid>
+<clubname>Musical</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689735</clubid>
+<clubname>Netball 1</clubname>
+<gender>mixed</gender>
+<yeargroups>10</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689731</clubid>
+<clubname>Orchestra</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689734</clubid>
+<clubname>Proten Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689729</clubid>
+<clubname>Recreational Badminton Y9-11</clubname>
+<gender>mixed</gender>
+<yeargroups>9,10,11</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689730</clubid>
+<clubname>Scrabble Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>1.Senior School Co-curricular- Monday</category>
+<clubid>1689737</clubid>
+<clubname>Trampoline Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1690299</clubid>
+<clubname>Epic Sports **EXTERNAL**</clubname>
+<gender>mixed</gender>
+<yeargroups>0,1,2,3,4,5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1690306</clubid>
+<clubname>Wellbeing Club</clubname>
+<gender>mixed</gender>
+<yeargroups>0</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1690303</clubid>
+<clubname>Y2 - Gymnastics</clubname>
+<gender>mixed</gender>
+<yeargroups>1,2</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1690307</clubid>
+<clubname>Y3-6 - Samba Band</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4,5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1690304</clubid>
+<clubname>Y4 - Gymnastics</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2 Junior School co-curricular - Tuesday</category>
+<clubid>1690308</clubid>
+<clubname>Y4-6 - **EXTERNAL** Gateway Dance</clubname>
+<gender>mixed</gender>
+<yeargroups>4,5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689741</clubid>
+<clubname>Badminton Club </clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689747</clubid>
+<clubname>Badminton Club - Y8</clubname>
+<gender>mixed</gender>
+<yeargroups>8</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689744</clubid>
+<clubname>eSports - KS3</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689745</clubid>
+<clubname>Guitar Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689749</clubid>
+<clubname>Musical - (cast)</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689748</clubid>
+<clubname>Netball - Y8</clubname>
+<gender>mixed</gender>
+<yeargroups>8</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689740</clubid>
+<clubname>Netball 2 - Y9</clubname>
+<gender>mixed</gender>
+<yeargroups>9</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689746</clubid>
+<clubname>Physics Party</clubname>
+<gender>mixed</gender>
+<yeargroups>10</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>2.Senior School Co-curricular - Tuesday</category>
+<clubid>1689743</clubid>
+<clubname>Recreational Basketball.</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690317</clubid>
+<clubname>Y1 - Marvellous Maths</clubname>
+<gender>mixed</gender>
+<yeargroups>1</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690313</clubid>
+<clubname>Y1 - Y2 - Cross Country/Fitness</clubname>
+<gender>mixed</gender>
+<yeargroups>1,2</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690318</clubid>
+<clubname>Y2- Outdoor Explorers</clubname>
+<gender>mixed</gender>
+<yeargroups>2</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690315</clubid>
+<clubname>Y2-6 - Orchestra </clubname>
+<gender>mixed</gender>
+<yeargroups>2,3,4,5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690319</clubid>
+<clubname>Y3&4 - Book club</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690314</clubid>
+<clubname>Y3-4 - Recorder Club (max 12)</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690310</clubid>
+<clubname>Y3-4 - Netball</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690311</clubid>
+<clubname>Y5&6 - Football</clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3 Junior School Co-curricular - Wednesday</category>
+<clubid>1690320</clubid>
+<clubname>Y5&6 - Science Club</clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689761</clubid>
+<clubname>Debating Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689760</clubid>
+<clubname>Film Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689757</clubid>
+<clubname>Fitness Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689759</clubid>
+<clubname>Folk Band</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689764</clubid>
+<clubname>GCSE - Spanish/French/German Writing</clubname>
+<gender>mixed</gender>
+<yeargroups>10</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689752</clubid>
+<clubname>Gymnastics (Y7-8)</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689758</clubid>
+<clubname>History Society</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689754</clubid>
+<clubname>Indoor Hockey</clubname>
+<gender>mixed</gender>
+<yeargroups>9,10</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>3.Senior School Co-curricular- Wednesday</category>
+<clubid>1689763</clubid>
+<clubname>Netball 1 - Y9</clubname>
+<gender>mixed</gender>
+<yeargroups>9</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690327</clubid>
+<clubname>Reception - Kapla </clubname>
+<gender>mixed</gender>
+<yeargroups>0</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690321</clubid>
+<clubname>Reception-Y2 - Ball Skills </clubname>
+<gender>mixed</gender>
+<yeargroups>0,1,2</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690330</clubid>
+<clubname>Y1-Kapla</clubname>
+<gender>mixed</gender>
+<yeargroups>1</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690334</clubid>
+<clubname>Y2 - Board Games</clubname>
+<gender>mixed</gender>
+<yeargroups>2</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690373</clubid>
+<clubname>Y3&4 - Fitness</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690326</clubid>
+<clubname>Y3-4 - Cross Country/Fitness</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690325</clubid>
+<clubname>Y5 - Badminton</clubname>
+<gender>mixed</gender>
+<yeargroups>5</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690322</clubid>
+<clubname>Y5 - Netball</clubname>
+<gender>mixed</gender>
+<yeargroups>5</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1690374</clubid>
+<clubname>Y5-6 -Glass Painting</clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4 Junior School Co-curricular - Thursday</category>
+<clubid>1703625</clubid>
+<clubname>Y5-6 Gymnastics Club</clubname>
+<gender>mixed</gender>
+<yeargroups>5,6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4.Senior School Co-curricular- Thursday</category>
+<clubid>1689769</clubid>
+<clubname>Art Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4.Senior School Co-curricular- Thursday</category>
+<clubid>1689767</clubid>
+<clubname>Badminton</clubname>
+<gender>mixed</gender>
+<yeargroups>7</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4.Senior School Co-curricular- Thursday</category>
+<clubid>1689765</clubid>
+<clubname>Netball - Senior</clubname>
+<gender>mixed</gender>
+<yeargroups>11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>4.Senior School Co-curricular- Thursday</category>
+<clubid>1689770</clubid>
+<clubname>Netball Y7</clubname>
+<gender>mixed</gender>
+<yeargroups>7</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5 Junior School Co-curricular - Friday</category>
+<clubid>1690375</clubid>
+<clubname>Reception -Y5 - **EXTERNAL** Rugby Minis</clubname>
+<gender>mixed</gender>
+<yeargroups>0,1,2,3,4,5</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5 Junior School Co-curricular - Friday</category>
+<clubid>1690379</clubid>
+<clubname>Y3-4 - Football</clubname>
+<gender>mixed</gender>
+<yeargroups>3,4</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5 Junior School Co-curricular - Friday</category>
+<clubid>1690378</clubid>
+<clubname>Y6 - Badminton</clubname>
+<gender>mixed</gender>
+<yeargroups>6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5 Junior School Co-curricular - Friday</category>
+<clubid>1690377</clubid>
+<clubname>Y6 - Netball</clubname>
+<gender>mixed</gender>
+<yeargroups>6</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689785</clubid>
+<clubname>Chess Club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689781</clubid>
+<clubname>Classics and Archaeology Society</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689775</clubid>
+<clubname>Current Affairs</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689788</clubid>
+<clubname>KS3 Dance</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689787</clubid>
+<clubname>LEAD Enterprise enrichment</clubname>
+<gender>mixed</gender>
+<yeargroups>12</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689771</clubid>
+<clubname>Lego League - (AM)</clubname>
+<gender>mixed</gender>
+<yeargroups>6,7</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689772</clubid>
+<clubname>Lego League (PM)</clubname>
+<gender>mixed</gender>
+<yeargroups>6,7</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689789</clubid>
+<clubname>Musical (cast)</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8,9,10,11,12,13</yeargroups>
+</club>
+<club>
+<term>Spring Term</term>
+<academicyear>20252026</academicyear>
+<category>5.Senior School Co-curricular - Friday</category>
+<clubid>1689782</clubid>
+<clubname>Very beginner Japanese club</clubname>
+<gender>mixed</gender>
+<yeargroups>7,8</yeargroups>
+</club>
+</clubs>
+    `;
+
+    // 1. Clock
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. Process Data
+    function processData() {
+    const parser = new DOMParser();
+    
+    // Fix: Escape raw ampersands that break the XML parser
+    const sanitizedXml = rawXml.replace(/&(?!(amp|lt|gt|quot|apos);)/g, "&amp;");
+    
+    const xmlDoc = parser.parseFromString(sanitizedXml, "text/xml");
+
+    // Error Check: See if the browser encountered a parsing error
+    const errorNode = xmlDoc.querySelector("parsererror");
+    if (errorNode) {
+        console.error("XML Parsing Error:", errorNode.textContent);
+        document.getElementById('content').innerHTML = "<div class='club-card'>Data Error: Please check XML syntax.</div>";
+        return;
+    }
+
+    const clubs = xmlDoc.getElementsByTagName("club");
+    let html = "";
+
+    for (let i = 0; i < clubs.length; i++) {
+        const category = clubs[i].getElementsByTagName("category")[0]?.textContent || "";
+        
+        // Filter: Only show Senior School
+        if (category.toLowerCase().includes("junior school")) continue;
+
+        const name = clubs[i].getElementsByTagName("clubname")[0]?.textContent || "";
+        const term = clubs[i].getElementsByTagName("term")[0]?.textContent || "";
+        const years = clubs[i].getElementsByTagName("yeargroups")[0]?.textContent || "";
+
+        html += `
+            <div class="club-card">
+                <span class="club-name">${name}</span>
+                <div class="club-meta">
+                    <span class="term-badge">${term}</span>
+                    <span class="years-label">Years: ${years}</span>
+                    <span style="color:#666; font-style:italic;">${category}</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Double the content for the infinite scroll loop
+    document.getElementById('content').innerHTML = html + html;
+}
+
+    processData();
+</script>
+
+</body>
+</html>
