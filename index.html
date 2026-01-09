@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Senior School Clubs Display</title>
+    <style>
+        :root { 
+            --school-teal: #008080; 
+            --bg-dark: #0a0a0a;
+        }
+        
+        body, html { 
+            height: 100%; margin: 0; padding: 0; 
+            background: var(--bg-dark);
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex; justify-content: center;
+        }
+        
+        .ticker-wrap {
+            width: 100vw; height: 100vh;
+            background: white; position: relative;
+        }
+
+        .header-container {
+            background: var(--school-teal); 
+            color: white; padding: 20px 60px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 10px solid #005a5a;
+        }
+
+        .header-text h1 { 
+            margin: 0; font-size: 3.5rem; text-transform: uppercase; font-weight: 800;
+        }
+
+        #live-clock {
+            font-size: 3rem; font-weight: 700; background: rgba(0,0,0,0.2);
+            padding: 10px 30px; border-radius: 15px;
+        }
+
+        .scroll-box { 
+            height: calc(100vh - 160px); 
+            overflow: hidden; position: relative; 
+        }
+
+        #content {
+            position: absolute; width: 100%;
+            /* SLOWED DOWN: Changed from 90s to 150s */
+            animation: scroll-up 240s linear infinite;
+        }
+
+        .club-card { 
+            padding: 50px 70px; 
+            border-bottom: 3px solid #eee; 
+            background: white;
+        }
+
+        .club-name { 
+            font-size: 4.5rem; 
+            font-weight: 900; 
+            color: var(--school-teal); 
+            line-height: 1.1; margin-bottom: 20px;
+            display: block;
+        }
+
+        .club-meta { 
+            font-size: 2.2rem; 
+            color: #333; 
+            font-weight: 600;
+            display: flex; gap: 30px; align-items: center;
+        }
+
+        .term-badge {
+            background: #008080; color: white;
+            padding: 5px 20px; border-radius: 10px; font-size: 1.8rem;
+        }
+
+        .category-text { color: #666; font-style: italic; }
+
+        .years-label { color: #d32f2f; }
+
+        @keyframes scroll-up {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+
+        .status-msg { padding: 100px; text-align: center; font-size: 3rem; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+    <div class="header-container">
+        <div class="header-text">
+            <h1>Senior School Clubs</h1>
+        </div>
+        <div id="live-clock">00:00:00</div>
+    </div>
+
+    <div class="scroll-box">
+        <div id="content">
+            <div id="status" class="status-msg">Filtering and Loading Clubs...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socsUrl = 'https://www.socscms.com/socs/xml/cocurricular.ashx?ID=25060&key=2BB4684F-0679-4050-A5E3-0E88A401862C&data=clubs';
+    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(socsUrl);
+
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function fetchData() {
+        const status = document.getElementById('status');
+        try {
+            const response = await fetch(proxy);
+            const data = await response.json();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+            const clubs = xmlDoc.getElementsByTagName("club");
+
+            let html = "";
+            let clubCount = 0;
+
+            for (let i = 0; i < clubs.length; i++) {
+                const category = clubs[i].getElementsByTagName("category")[0]?.textContent || "";
+                
+                // FILTER: Skip any club that includes "Junior School" in the category
+                if (category.toLowerCase().includes("junior school")) {
+                    continue; 
+                }
+
+                const name = clubs[i].getElementsByTagName("clubname")[0]?.textContent || "";
+                const term = clubs[i].getElementsByTagName("term")[0]?.textContent || "";
+                const years = clubs[i].getElementsByTagName("yeargroups")[0]?.textContent || "";
+
+                html += `
+                    <div class="club-card">
+                        <span class="club-name">${name}</span>
+                        <div class="club-meta">
+                            <span class="term-badge">${term}</span>
+                            <span class="category-text">${category}</span>
+                            <span class="years-label">Years: ${years}</span>
+                        </div>
+                    </div>
+                `;
+                clubCount++;
+            }
+
+            if (clubCount === 0) {
+                status.innerHTML = "No Senior School clubs found.";
+            } else {
+                // Fill content and double it for a smooth infinite loop
+                document.getElementById('content').innerHTML = html + html;
+            }
+
+        } catch (err) {
+            status.innerHTML = "Connection Error. Retrying...";
+        }
+    }
+
+    fetchData();
+    setInterval(fetchData, 3600000); 
+</script>
+
+</body>
+</html>
