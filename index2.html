@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior School Clubs - Digital Signage</title>
+    <style>
+        :root { 
+            --school-teal: #008080; 
+            --bg-dark: #050505;
+            --text-white: #ffffff;
+            --card-bg: #ffffff;
+        }
+        
+        body, html { 
+            height: 100%; margin: 0; padding: 0; 
+            background: var(--bg-dark);
+            font-family: 'Segoe UI', Tahoma, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex; justify-content: center;
+        }
+        
+        .ticker-wrap {
+            width: 100vw; height: 100vh;
+            background: var(--card-bg); position: relative;
+            display: flex; flex-direction: column;
+        }
+
+        /* Top Header Section */
+        .header-container {
+            background: var(--school-teal); 
+            color: white; padding: 25px 60px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 12px solid #005a5a;
+            z-index: 100;
+        }
+
+        .header-text h1 { 
+            margin: 0; font-size: 3.8rem; text-transform: uppercase; font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        #live-clock {
+            font-size: 3.5rem; font-weight: 700; font-variant-numeric: tabular-nums;
+            background: rgba(0,0,0,0.25); padding: 10px 35px; border-radius: 12px;
+        }
+
+        /* Scrolling Area */
+        .scroll-box { 
+            flex-grow: 1; overflow: hidden; position: relative; 
+        }
+
+        #content {
+            position: absolute; width: 100%;
+            /* Speed set to 150s for a very smooth, slow crawl */
+            animation: scroll-up 150s linear infinite;
+        }
+
+        /* Individual Club Entries */
+        .club-card { 
+            padding: 55px 80px; 
+            border-bottom: 2px solid #eeeeee; 
+            background: var(--card-bg);
+        }
+
+        .club-name { 
+            font-size: 4.8rem; font-weight: 900; 
+            color: var(--school-teal); 
+            line-height: 1.1; margin-bottom: 25px;
+            display: block;
+        }
+
+        .club-meta { 
+            font-size: 2.5rem; color: #222; 
+            font-weight: 600; display: flex; gap: 40px; align-items: center;
+        }
+
+        .term-badge {
+            background: var(--school-teal); color: white;
+            padding: 8px 25px; border-radius: 12px; font-size: 2rem;
+            text-transform: uppercase;
+        }
+
+        .category-text { color: #555; font-style: italic; }
+
+        .years-label { color: #b71c1c; background: #fff5f5; padding: 0 15px; border-radius: 8px; }
+
+        /* Animation Keyframes */
+        @keyframes scroll-up {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+
+        /* Status Footer */
+        .status-footer {
+            position: absolute; bottom: 0; width: 100%;
+            background: #f8f9fa; border-top: 1px solid #ddd;
+            padding: 10px 60px; display: flex; justify-content: space-between;
+            font-size: 1.2rem; color: #777; z-index: 100;
+        }
+
+        .dot { height: 12px; width: 12px; background-color: #bbb; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .online { background-color: #4caf50; box-shadow: 0 0 8px #4caf50; }
+
+        .loading-screen { padding: 150px; text-align: center; font-size: 4rem; color: #bbb; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+    <div class="header-container">
+        <div class="header-text">
+            <h1>Senior School Clubs</h1>
+        </div>
+        <div id="live-clock">00:00</div>
+    </div>
+
+    <div class="scroll-box">
+        <div id="content">
+            <div id="status-msg" class="loading-screen">INITIALISING FEED...</div>
+        </div>
+    </div>
+
+    <div class="status-footer">
+        <div><span id="status-dot" class="dot"></span> <span id="status-text">Connecting to SOCS...</span></div>
+        <div id="last-updated">Last Sync: --:--</div>
+    </div>
+</div>
+
+<script>
+    const socsUrl = 'https://www.socscms.com/socs/xml/cocurricular.ashx?ID=25060&key=2BB4684F-0679-4050-A5E3-0E88A401862C&data=clubs';
+    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(socsUrl);
+
+    // 1. Live Clock Function
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. Data Fetching Function
+    async function fetchData() {
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.getElementById('status-dot');
+        const lastUpdated = document.getElementById('last-updated');
+        
+        try {
+            const response = await fetch(proxy);
+            if (!response.ok) throw new Error("Proxy Error");
+            
+            const data = await response.json();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+            const clubs = xmlDoc.getElementsByTagName("club");
+
+            let html = "";
+            let clubCount = 0;
+
+            for (let i = 0; i < clubs.length; i++) {
+                const category = clubs[i].getElementsByTagName("category")[0]?.textContent || "";
+                
+                // FILTER: Only show Senior School (removes Junior School entries)
+                if (category.toLowerCase().includes("junior school")) continue;
+
+                const name = clubs[i].getElementsByTagName("clubname")[0]?.textContent || "";
+                const term = clubs[i].getElementsByTagName("term")[0]?.textContent || "";
+                const years = clubs[i].getElementsByTagName("yeargroups")[0]?.textContent || "";
+
+                html += `
+                    <div class="club-card">
+                        <span class="club-name">${name}</span>
+                        <div class="club-meta">
+                            <span class="term-badge">${term}</span>
+                            <span class="category-text">${category}</span>
+                            <span class="years-label">Years: ${years}</span>
+                        </div>
+                    </div>
+                `;
+                clubCount++;
+            }
+
+            if (clubCount > 0) {
+                // Duplicate the list for a seamless loop
+                document.getElementById('content').innerHTML = html + html;
+                statusText.innerText = "System Live";
+                statusDot.classList.add("online");
+                const now = new Date();
+                lastUpdated.innerText = "Last Sync: " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            } else {
+                document.getElementById('content').innerHTML = "<div class='loading-screen'>No Senior Clubs Found.</div>";
+            }
+
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            statusText.innerText = "Connection Interrupted - Retrying...";
+            statusDot.classList.remove("online");
+        }
+    }
+
+    // Initial Fetch
+    fetchData();
+    
+    // Refresh data every 60 minutes to stay current
+    setInterval(fetchData, 3600000);
+</script>
+
+</body>
+</html>
