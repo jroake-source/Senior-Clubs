@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SOCS Display Screen - Teal</title>
+    <style>
+        :root { 
+            --school-teal: #008080; 
+            --accent-gold: #ffcc00; 
+        }
+        
+        body, html { 
+            height: 100%; margin: 0; padding: 0; 
+            background: #000; /* Black border/background for screen contrast */
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex; justify-content: center;
+        }
+        
+        .ticker-wrap {
+            width: 100vw; height: 100vh;
+            background: white; position: relative;
+        }
+
+        .header { 
+            background: var(--school-teal); 
+            color: white; padding: 25px; 
+            text-align: center; font-size: 3.5rem; 
+            font-weight: 800; text-transform: uppercase;
+            border-bottom: 8px solid #006666;
+        }
+
+        .scroll-box { 
+            height: calc(100vh - 140px); 
+            overflow: hidden; position: relative; 
+        }
+
+        #content {
+            position: absolute; width: 100%;
+            animation: scroll-up 75s linear infinite; /* Adjusted speed for more text */
+        }
+
+        .scroll-box:hover #content { animation-play-state: paused; }
+
+        .club-card { 
+            padding: 45px 60px; 
+            border-bottom: 3px solid #eee; 
+            background: white;
+        }
+
+        .club-name { 
+            font-size: 4.2rem; 
+            font-weight: 900; 
+            color: var(--school-teal); 
+            line-height: 1.1; margin-bottom: 15px;
+            display: block;
+        }
+
+        .club-meta { 
+            font-size: 2.2rem; 
+            color: #333; 
+            font-weight: 600;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .date-badge {
+            color: #008080;
+            background: #e6f2f2;
+            padding: 0 15px;
+            border-radius: 8px;
+        }
+
+        .time-box {
+            color: #d32f2f; /* Red for high visibility on timings */
+        }
+
+        .location-box {
+            color: #555;
+            font-style: italic;
+        }
+
+        @keyframes scroll-up {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+
+        .status-msg { padding: 100px; text-align: center; font-size: 3rem; color: #888; }
+    </style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+    <div class="header">Clubs & Activities</div>
+    <div class="scroll-box">
+        <div id="content">
+            <div id="status" class="status-msg">Fetching Live Feed...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socsUrl = 'https://www.socscms.com/socs/xml/cocurricular.ashx?ID=25060&key=2BB4684F-0679-4050-A5E3-0E88A401862C&data=events';
+    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(socsUrl);
+
+    async function fetchData() {
+        const status = document.getElementById('status');
+        try {
+            const response = await fetch(proxy);
+            const data = await response.json();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+            const events = xmlDoc.getElementsByTagName("event");
+
+            if (events.length === 0) {
+                status.innerHTML = "No upcoming activities found.";
+                return;
+            }
+
+            let html = "";
+            for (let i = 0; i < events.length; i++) {
+                const title = events[i].getElementsByTagName("title")[0]?.textContent || "";
+                const location = events[i].getElementsByTagName("location")[0]?.textContent || "Location TBC";
+                const startdate = events[i].getElementsByTagName("startdate")[0]?.textContent || "";
+                const starttime = events[i].getElementsByTagName("starttime")[0]?.textContent || "";
+                const endtime = events[i].getElementsByTagName("endtime")[0]?.textContent || "";
+
+                html += `
+                    <div class="club-card">
+                        <span class="club-name">${title}</span>
+                        <div class="club-meta">
+                            <span class="date-badge">${startdate}</span>
+                            <span class="time-box">${starttime} – ${endtime}</span>
+                            <span class="location-box">| ${location}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('content').innerHTML = html + html;
+
+        } catch (err) {
+            status.innerHTML = "Connection Error. Retrying...";
+        }
+    }
+
+    fetchData();
+    setInterval(fetchData, 1800000); // Refreshes every 30 mins
+</script>
+
+</body>
+</html>
